@@ -1,0 +1,30 @@
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS "type" (
+	"type_id"	INTEGER NOT NULL,
+	"a_personen"	INTEGER NOT NULL,
+	"weekprijs"	INTEGER NOT NULL,
+	PRIMARY KEY("type_id")
+);
+CREATE TABLE IF NOT EXISTS "gast" (
+	"gast_id"	INTEGER NOT NULL,
+	"gebruikersnaam"	TEXT NOT NULL,
+	"wachtwoord"	TEXT NOT NULL,
+	PRIMARY KEY("gast_id")
+);
+CREATE TABLE IF NOT EXISTS "bungalow" (
+	"type"	INTEGER,
+	"bungalow_id"	INTEGER NOT NULL,
+	"naam"	TEXT NOT NULL,
+	PRIMARY KEY("type")
+);
+CREATE TABLE IF NOT EXISTS "boeking" (
+	"boeking_id"	INTEGER NOT NULL,
+	"gast_id"	INTEGER NOT NULL,
+	"bungalow_id"	INTEGER NOT NULL,
+	"week"	INTEGER NOT NULL,
+	"prijs"	INTEGER NOT NULL,
+	FOREIGN KEY("gast_id") REFERENCES "gast"("gast_id"),
+	FOREIGN KEY("bungalow_id") REFERENCES "bungalow"("bungalow_id"),
+	PRIMARY KEY("boeking_id")
+);
+COMMIT;
