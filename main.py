@@ -1,9 +1,17 @@
 
 
 from flask import Flask, render_template
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import InputRequired, Length, ValidationError
+
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'VerySecret'
 
+class LoginForm(FlaskForm):
+    gebruikersnaam =  StringField('gebruikersnaam', validators=[InputRequired(), Length(min=4, max=15)])
+    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 # ------- Begin of routes ---------
 
 @app.route('/', methods=['GET'])
@@ -24,16 +32,16 @@ def aanbod():
     """    
     return render_template('aanbod.html')
 
-@app.route('/auth/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     """
     Page function for auth/login.html.
     Returns the login.html page trough render_template.
     Accepts POST and GET requests.
-    """    
+    """
     return render_template('login.html')
 
-@app.route('/auth/register', methods=['GET', 'POST'])
+@app.route('/registreren', methods=['GET', 'POST'])
 def register():
     """
     Page function for auth/register.html.
