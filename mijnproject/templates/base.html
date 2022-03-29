@@ -21,35 +21,25 @@
 
 <body id="page-top" data-bs-spy="scroll" data-bs-target="#mainNav" data-bs-offset="77">
     <nav class="navbar navbar-light navbar-expand-sm fixed-top" id="mainNav" style="background: rgba(0,0,0,0.21);">
-        <div class="container"><a class="navbar-brand" href="index.html" style="color: rgb(255,255,255);">Zee en Duin</a><button data-bs-toggle="collapse" class="navbar-toggler navbar-toggler-right" data-bs-target="#navbarResponsive" type="button" aria-controls="navbarResponsive"
-                aria-expanded="false" aria-label="Toggle navigation" value="Menu"><i class="fa fa-bars"></i></button>
+        <div class="container"><a class="navbar-brand" href="/" style="color: rgb(255,255,255);">Zee en Duin</a><button data-bs-toggle="collapse" class="navbar-toggler navbar-toggler-right" data-bs-target="#navbarResponsive" type="button" aria-controls="navbarResponsive" aria-expanded="false"
+                aria-label="Toggle navigation" value="Menu"><i class="fa fa-bars"></i></button>
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ms-auto" style="font-size: 18px;color: rgb(255, 255, 255);">
                     <li class="nav-item nav-link"><a class="nav-link" href="/aanbod">zoek &amp; boek</a></li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item nav-link"><a class="nav-link" href="/logout">Uitloggen</a></li>
+                    {% else %} 
+                    <li class="nav-item nav-link"><a class="nav-link" href="/login">Login</a></li>
                     <li class="nav-item nav-link"><a class="nav-link" href="/registreren">registreren</a></li>
-                    <li class="nav-item nav-link"><a class="nav-link active" href="/login">login</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-    <section class="login-dark" style="background: url(&quot;static/assets/img/sean-oulashin-KMn4VEeEPR8-unsplash.jpg&quot;);">
-        <form method="post" style="background: rgb(255,255,255);">
-            <div class="illustration"><i class="icon ion-ios-locked-outline" style="color: rgb(255,92,0);"></i></div>
-            <a class="error">{{ error }}</a>
-            <div class="mb-3"><input class="form-control" type="name" name="gebruikersnaam" placeholder="Gebruikersnaam" style="color: rgb(0,0,0);"></div>
-            <div class="mb-3"><input class="form-control" type="password" name="wachtwoord" placeholder="Wachtwoord" style="color: rgb(0,0,0);"></div>
-            <div class="mb-3"><button class="btn btn-primary d-block w-100" type="submit" style="color: rgb(255,255,255);background: rgb(255,92,0);">Log In</button></div><a class="forgot" href="#">Wachtwoord vergeten?</a><a class="navbar-brand" href="index.html" style="color: rgb(255,255,255);">Zee en Duin</a>
-        </form>
-    </section>
-    <footer>
-        <div class="container text-center">
-            <p>Copyright ©&nbsp;Zee en Duin 2022</p>
-        </div>
-    </footer>
-    <script src="static/assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="static/assets/js/grayscale.js"></script>
-    <script src="static/assets/js/Animated-Pretty-Product-List-v12.js"></script>
-    <script src="static/assets/js/Swiper-Slider-Card-For-Blog-Or-Product.js"></script>
+
+{% block content %}
+
+{% endblock %}
 </body>
 
 </html>
