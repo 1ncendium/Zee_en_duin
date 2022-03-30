@@ -1,15 +1,5 @@
 {% extends "base.html" %}
-{% block content %}
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for msg in messages %}
-        <div class="alert alert-info">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <strong>Heads up!</strong> {{msg}}
-        </div>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}  
+{% block content %}  
 <!DOCTYPE html>
 <html>
     <header class="masthead" style="background: url(&quot;static/assets/img/preprocessed.jpg&quot;) repeat;background-size: cover;">

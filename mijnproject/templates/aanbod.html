@@ -1,15 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for msg in messages %}
-        <div class="alert alert-info">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <strong>Heads up!</strong> {{msg}}
-        </div>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
 <!DOCTYPE html>
 <html>
     <section class="text-center content-section" id="about" style="background: url(&quot;static/assets/img/europarcs_verkoop_home.jpg&quot;), #ffffff;background-size: cover, auto;filter: blur(0px);">
