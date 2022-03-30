@@ -1,7 +1,7 @@
 from mijnproject import app, db
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
-from mijnproject.models import User
+from mijnproject.models import User, Bungalow
 from mijnproject.forms import LoginForm, RegistrationForm
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -13,9 +13,12 @@ def home():
 
 @app.route('/aanbod')
 @login_required
-def welkom():
+def aanbod():
     user = current_user.username
-    return render_template('aanbod.html', user=user)
+
+    bungalow = Bungalow.query.filter_by(id=1)
+
+    return render_template('aanbod.html', user=user, bungalow=bungalow)
 
 
 @app.route('/logout')
@@ -50,7 +53,7 @@ def login():
             # So let's now check if that next exists, otherwise we'll go to
             # the welcome page.
             if next == None or not next[0] == '/':
-                next = url_for('welkom')
+                next = url_for('aanbod')
 
             return redirect(next)
     return render_template('login.html', form=form)
