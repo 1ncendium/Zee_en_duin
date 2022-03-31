@@ -64,8 +64,7 @@ class Boeking(db.Model):
     weeknummer = db.Column(db.Integer)
     prijs = db.Column(db.Integer)
 
-    def __init__(self, id, gast, bungalow, weeknummer, prijs):
-        self.id = id
+    def __init__(self, gast, bungalow, weeknummer, prijs):
         self.gast = gast
         self.bungalow = bungalow
         self.weeknummer = weeknummer

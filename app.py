@@ -1,8 +1,8 @@
 from mijnproject import app, db
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
-from mijnproject.models import User, Bungalow
-from mijnproject.forms import LoginForm, RegistrationForm
+from mijnproject.models import User, Bungalow, Boeking
+from mijnproject.forms import LoginForm, RegistrationForm, BoekForm
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -14,11 +14,27 @@ def home():
 @app.route('/aanbod')
 @login_required
 def aanbod():
-    user = current_user.username
+    user = current_user.get_id()
 
     bungalow = Bungalow.query.filter_by(id=1)
 
     return render_template('aanbod.html', user=user, bungalow=bungalow)
+
+@app.route('/boek', methods=['GET','POST'])
+@login_required
+def boek():
+    form = BoekForm()
+
+    if form.validate_on_submit():
+        boeking = Boeking(gast=current_user.get_id(),
+            bungalow=form.username.data,
+            week=form.password.data)
+
+        db.session.add(boeking)
+        db.session.commit()
+        flash('Dank voor de boeking! ')
+        return redirect(url_for('/aanbod'))
+    return render_template('boek.html', form=form)
 
 
 @app.route('/logout')
