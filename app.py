@@ -36,6 +36,10 @@ def boek():
         return redirect(url_for('/aanbod'))
     return render_template('boek.html', form=form)
 
+@app.route('/bedankt')
+@login_required
+def bedankt():
+    return render_template('bedankt.html')
 
 @app.route('/logout')
 @login_required
