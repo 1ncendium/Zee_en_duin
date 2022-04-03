@@ -29,8 +29,9 @@
                 <ul class="navbar-nav ms-auto" style="font-size: 18px;color: rgb(255, 255, 255);">
                     <li class="nav-item nav-link"><a class="nav-link" href="/aanbod">zoek &amp; boek</a></li>
                     {% if current_user.is_authenticated %}
+                    <li class="nav-item nav-link"><a class="nav-link" href="/mijn-boekingen">Mijn boekingen</a></li>
                     <li class="nav-item nav-link"><a class="nav-link" href="/logout">Uitloggen</a></li>
-                    {% else %} 
+                    {% else %}
                     <li class="nav-item nav-link"><a class="nav-link" href="/login">Login</a></li>
                     <li class="nav-item nav-link"><a class="nav-link" href="/registreren">registreren</a></li>
                     {% endif %}
@@ -38,17 +39,11 @@
             </div>
         </div>
     </nav>
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-    {% for msg in messages %}
+    {% with messages = get_flashed_messages() %} {% if messages %} {% for msg in messages %}
     <div class="alert alert-info" role="alert">
         {{msg}}
-        </div>
-    {% endfor %}
-{% endif %}
-{% endwith %}
-
-{% block content %}
-{% endblock %}
+    </div>
+    {% endfor %} {% endif %} {% endwith %} {% block content %} {% endblock %}
 </body>
+
 </html>
