@@ -202,10 +202,14 @@ def mijnBoekingen():
     if request.method == 'POST':
         if request.form["Annuleren"]:
             annuleer_id = request.form["Annuleren"]
-            boeking = Boeking.query.get(annuleer_id)
-            db.session.delete(boeking)
-            db.session.commit()
-            return redirect(url_for('mijnBoekingen'))
+
+            if int(annuleer_id) not in bungalow_id:
+                flash("Dat is niet jouw boeking")
+            else:
+                boeking = Boeking.query.get(annuleer_id)
+                db.session.delete(boeking)
+                db.session.commit()
+                return redirect(url_for('mijnBoekingen'))
             
 
     # Controleer of er boekingen zijn voor onze gast. Als dat niet zo is wordt nul_boekingen True.
