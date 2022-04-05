@@ -80,7 +80,7 @@ def login():
         # Check that the user was supplied and the password is right
         # The verify_password method comes from the User object
         if user != None:
-            if user.check_password(form.password.data):
+            if user.check_password(form.password.data) and user is not None:
                 # Log in the user
 
                 login_user(user)
@@ -97,7 +97,7 @@ def login():
 
                 return redirect(next)
         else:
-            flash("Gebruiker bestaat niet")
+            flash("Gebruiker bestaat niet!")
     return render_template('login.html', form=form)
 
 
@@ -134,31 +134,65 @@ def bedankt():
             vanaf_datum = request.form["boeking-start"]
 
             if vanaf_datum != '':
+                beschikbare_datum = True
                 date_time_obj = datetime.strptime(vanaf_datum, '%Y-%m-%d')
                 vanaf_datum = date_time_obj.date()
                 tot_datum = vanaf_datum + timedelta(days=7)
-
                 def Convert(string):
                     """ Convert neemt een string als parameter en split deze string bij elke spatie.
                         Vervolgens wordt hier een lijst van gemaakt."""
                     li = list(string.split(" "))
                     return li
-
-                data = Convert(request.form["Bevestigen"])
-                id = data[0]
-                prijs = data[1]
                 
-                boeking = Boeking(gast=current_user.get_id(),
-                        bungalow=id,
-                        prijs=prijs,
-                        van=vanaf_datum,
-                        tot=tot_datum)
-                db.session.add(boeking)
-                db.session.commit()
+                data = Convert(request.form["Bevestigen"])
+                boeking = Boeking.query.filter_by(bungalow=data[0]).all()
+                #Hoeveel boekingen er al zijn in de database voor dezelfde bungalow
+                print(f'boeking = {boeking}')
+                
+                #Filteren op id's van boekingen op dezelfde bungalow
+                boeking_id = []
+                boeking_van = []
+                for x in range(len(boeking)):
+                    boeking_date_object = boeking[x].van
+                    boeking_id.append(boeking[x].id)
+                    print(boeking_date_object)
+                    if boeking_date_object == vanaf_datum:
+                        beschikbare_datum = False
+                id = data[0]
+                print(f'boeking_id = {boeking_id}')
+                print(f'boeking_van = {boeking_van}') 
+                bungalow = Bungalow.query.get(id)
+                bungalow_afbeelding = bungalow.afbeelding
+                bungalow_naam = bungalow.naam
+                bungalow_omschrijving = bungalow.beschrijving
+                bungalow_type = bungalow.type
+                type = Type.query.get(bungalow_type)
+                bungalow_prijs = type.weekprijs
+                boeken =f"{id} {bungalow_prijs}"        
+
+                if beschikbare_datum: 
+                    id = data[0]
+                    prijs = data[1]
+
+                    
+                    boeking = Boeking(gast=current_user.get_id(),
+                            bungalow=id,
+                            prijs=prijs,
+                            van=vanaf_datum,
+                            tot=tot_datum)
+                    db.session.add(boeking)
+                    db.session.commit()
+    
             else:
                 return redirect(url_for('aanbod')), flash('Error, je bent de datum vergeten in te vullen')
-            
-    return render_template('bedankt.html')
+    if beschikbare_datum==True:     
+        print(True)   
+        return render_template('bedankt.html')
+    else:
+        print(False)
+        return render_template('boek.html', bungalow_afbeelding=bungalow_afbeelding,
+                                bungalow_naam=bungalow_naam, bungalow_omschrijving=bungalow_omschrijving,
+                                bungalow_prijs=bungalow_prijs, boeken=boeken,id = data[0])
 
 @app.route('/mijn-boekingen', methods=['POST', 'GET'])
 @login_required
@@ -189,7 +223,6 @@ def mijnBoekingen():
         prijs.append(x.prijs)
         boeking_id.append(x.id)
 
-        # Nu we alle boekingen weten van onze gast, kunnen we bij elke boeking de juiste bungalow informatie opvragen.
         aantal_b = Bungalow.query.filter_by(id=x.id).all()
         for j in range(len(aantal_b)):
             y = Bungalow.query.filter_by(id=x.bungalow).all()[j]
@@ -198,12 +231,12 @@ def mijnBoekingen():
             omschrijving.append(y.beschrijving)
 
 
-    # Vang annuleer request op en verwerk in database
+
     if request.method == 'POST':
         if request.form["Annuleren"]:
             annuleer_id = request.form["Annuleren"]
 
-            if int(annuleer_id) not in bungalow_id:
+            if int(annuleer_id) not in boeking_id:
                 flash("Dat is niet jouw boeking")
             else:
                 boeking = Boeking.query.get(annuleer_id)
@@ -211,9 +244,10 @@ def mijnBoekingen():
                 db.session.commit()
                 return redirect(url_for('mijnBoekingen'))
             
+    
 
-    # Controleer of er boekingen zijn voor onze gast. Als dat niet zo is wordt nul_boekingen True.
     aantal_b = len(aantal)
+
     if aantal_b == 0:
         nul_boekingen = True
     else:
