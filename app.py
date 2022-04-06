@@ -65,12 +65,21 @@ def boek():
 
             # Controleer of vanaf_datum niet leeg is.
             if vanaf_datum != '':
-                beschikbare_datum = True
+                beschikbare_reservatie = True
 
                 # Strip vanaf_datum
                 date_time_obj = datetime.strptime(vanaf_datum, '%Y-%m-%d')
                 # Krijg alleen de datum van ons tijd_object
                 vanaf_datum = date_time_obj.date()
+
+                datum_vandaag = datetime.date(datetime.now())
+                # als de datum die je wilt boeken terug in de tijd of vandaag is
+                if vanaf_datum < datum_vandaag:
+                    bungalow = request.form['Bevestigen']
+                    return redirect(url_for('boek', bungalow=bungalow)), flash(f'De datum {vanaf_datum} is al geweest!')
+                if vanaf_datum == datum_vandaag:
+                    bungalow = request.form['Bevestigen']
+                    return redirect(url_for('boek', bungalow=bungalow)), flash(f'De datum {vanaf_datum} is vandaag!')
                 # tot_datum
                 tot_datum = vanaf_datum + timedelta(days=7)
                 
@@ -79,23 +88,26 @@ def boek():
 
                 # vraag alle boekingen op met dezelfde bungalow
                 boeking = Boeking.query.filter_by(bungalow=geboekte_bungalow_id).all()
-                
+                reservatie_data = [] 
+                for y in range(0,8):
+                    reservatie_data.append(vanaf_datum + timedelta(days=y))
+
                 # Creeër lege lijst voor boeking_id's
                 boeking_id = []
-
+                gereserveerde_data = []
                 # Filteren op id's van boekingen op dezelfde bungalow
                 for x in range(len(boeking)):
                     boeking_date_object = boeking[x].van
+                    for z in range(0,8):
+                        gereserveerde_data.append(boeking_date_object+timedelta(days=z))
+                    for p in reservatie_data:
+                        if p in gereserveerde_data:
+                            beschikbare_reservatie = False
                     boeking_id.append(boeking[x].id)
 
-                    tot = boeking[x].tot
-
-                    # Als er al een boeking is met dezelfde datum, dan wordt de beschikbare_datum False
-                    if boeking_date_object == vanaf_datum:
-                        beschikbare_datum = False
 
                 # Als beschikbare_datum True is, dan gaan we de boeking maken.
-                if beschikbare_datum:
+                if beschikbare_reservatie:
                     bungalow = Bungalow.query.filter_by(id=geboekte_bungalow_id).first()
                     type = bungalow.type
                     id = bungalow.id
@@ -117,18 +129,78 @@ def boek():
                 # Datum vergeten in te vullen, GET request naar /boek met bungalow id + flash bericht
                 bungalow = request.form['Bevestigen']
                 return redirect(url_for('boek', bungalow=bungalow)), flash("Je bent vergeten een datum in te vullen!")
+
+        if "Verlenging" in request.form:
+            # Boeking moet verlengd worden
+            # Haal boekings_id op
+            boeking_id = int(request.form["Verlenging"])
+            print(boeking_id)
+
+            # Haal aantal weken op
+            aantal_weken = int(request.form["weken"])
+            
+            # Creeër boekings_object van boeking
+            boeking_object = Boeking.query.filter_by(id=boeking_id).first()
+
+            # Haal huidige laatste dag en prijs op
+            laatste_dag = boeking_object.tot
+            huidige_prijs = boeking_object.prijs
+            huidige_prijs_zonder_teken = huidige_prijs.strip("€")
+            comma = huidige_prijs_zonder_teken.index(',')
+            huidige_prijs_zonder_teken = int(huidige_prijs_zonder_teken[:comma])
+
+            bungalow = Bungalow.query.filter_by(id=boeking_object.id).first()
+            type = bungalow.type
+            prijs_object = Type.query.filter_by(id=type).first()
+            type_prijs = prijs_object.weekprijs
+            type_prijs_zonder_teken = type_prijs.strip("€")
+            comma = type_prijs_zonder_teken.index(',')
+            type_prijs_zonder_teken = int(type_prijs_zonder_teken[:comma])
+
+
+            # Tel hier de aantal weken bij op die de gast heeft opgegeven en bereken de nieuwe prijs
+            nieuwe_laatste_dag = laatste_dag + timedelta(weeks=aantal_weken)
+            nieuwe_prijs = huidige_prijs_zonder_teken + (type_prijs_zonder_teken) * aantal_weken
+            
+            # Boeking aanpassen
+            boeking_object.prijs = f"€{nieuwe_prijs},00"
+            boeking_object.tot = nieuwe_laatste_dag
+            db.session.add(boeking_object)
+            db.session.commit()
+            return render_template('bedankt.html')
     else:
         # GET request, vraag bungalow informatie op van database.
         id = request.args.get("bungalow")
+        if request.args.get("verlengen"):
+            verlengen=True
+            boeking_id = request.args.get("boeking")
+            boeking = Boeking.query.filter_by(id=boeking_id).first()
+            huidige_prijs = boeking.prijs
+        else:
+            verlengen=False
+            boeking_id = 0
+            huidige_prijs = 0
+
         bungalow = Bungalow.query.get(id)
         bungalow_id = bungalow.id
         bungalow_afbeelding = bungalow.afbeelding
         bungalow_naam = bungalow.naam
         bungalow_omschrijving = bungalow.beschrijving
         bungalow_type = bungalow.type
-        return render_template("boek.html", bungalow=bungalow_id, bungalow_afbeelding=bungalow_afbeelding, bungalow_naam=bungalow_naam, 
-                                    bungalow_omschrijving=bungalow_omschrijving, bungalow_type=bungalow_type)
+        bungalow_prijs_object = Type.query.filter_by(id=bungalow_type).first()
+        bungalow_prijs = bungalow_prijs_object.weekprijs
+        boeking = Boeking.query.filter_by(id=boeking_id).first()
 
+        return render_template("boek.html", bungalow=bungalow_id, verlengen=verlengen, bungalow_afbeelding=bungalow_afbeelding, bungalow_naam=bungalow_naam, 
+                                    bungalow_omschrijving=bungalow_omschrijving, bungalow_type=bungalow_type, bungalow_prijs=bungalow_prijs, boeking=boeking_id, huidige_prijs=huidige_prijs)
+
+@app.route('/verlengen')
+@login_required
+def verlengen():
+    boeking = request.args.get("Verlengen")
+    bungalow_object = Boeking.query.filter_by(id=boeking).first()
+    bungalow = bungalow_object.bungalow
+    return redirect(url_for('boek', boeking=boeking, verlengen=True, bungalow=bungalow ))
 
 @app.route('/logout')
 @login_required
